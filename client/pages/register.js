@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Layout from "../components/Layout";
+import { showSuccessMessage, showErrorMessage } from "../helpers/alerts";
+import { API } from "../config";
 
 const Register = () => {
   const [state, setState] = useState({
@@ -24,16 +26,30 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    axios
-      .post(`http://localhost:5000/api/register`, {
+    setState({ ...state, buttonText: "Registering" });
+    try {
+      const response = await axios.post(`${API}/register`, {
         name,
         email,
         password
-      })
-      .then(response => console.log(response))
-      .catch(error => console.log(error));
+      });
+      setState({
+        ...state,
+        name: "",
+        email: "",
+        password: "",
+        buttonText: "Submitted",
+        success: response.data.message
+      });
+    } catch (error) {
+      setState({
+        ...state,
+        buttonText: "Register",
+        error: error.response.data.error
+      });
+    }
   };
 
   const registerForm = () => (
@@ -45,6 +61,7 @@ const Register = () => {
           type="text"
           className="form-control"
           placeholder="Name"
+          required
         ></input>
       </div>
       <div className="form-group">
@@ -54,6 +71,7 @@ const Register = () => {
           type="email"
           className="form-control"
           placeholder="Email"
+          required
         ></input>
       </div>
       <div className="form-group">
@@ -63,6 +81,7 @@ const Register = () => {
           type="password"
           className="form-control"
           placeholder="Password"
+          required
         ></input>
       </div>
       <div className="form-group">
@@ -75,12 +94,12 @@ const Register = () => {
 
   return (
     <Layout>
-      <div className="col-md-6 offset-md-3">
+      <div className="col-md-8 offset-md-2">
         <h1>Register</h1>
+        {success && showSuccessMessage(success)}
+        {error && showErrorMessage(error)}
         <br />
         {registerForm()}
-        <hr />
-        {JSON.stringify(state)}
       </div>
     </Layout>
   );
