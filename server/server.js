@@ -14,6 +14,7 @@ db();
 // Import routes
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
+const categoryRoutes = require("./routes/category");
 
 // apply middlewares
 app.use(morgan("dev"));
@@ -23,6 +24,7 @@ app.use(cors({ origin: process.env.CLIENT_URL })); // used by cors to allow acce
 // Middleware - pieces of code that run in the middle
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
+app.use("/api", categoryRoutes);
 
 const port = process.env.PORT;
 app.listen(port, () => console.log(`API running on port ${port}`));
