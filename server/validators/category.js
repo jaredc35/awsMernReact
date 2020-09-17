@@ -6,11 +6,12 @@ exports.categoryCreateValidator = [
     .isEmpty()
     .withMessage("Name is required"),
   check("image")
+    .not()
     .isEmpty()
     .withMessage("Image is required."),
   check("content")
     .isLength({ min: 20 })
-    .withMessage("Content is required.")
+    .withMessage("Content is required and should be at least 20 characters.")
 ];
 
 exports.categoryUpdateValidator = [
@@ -20,5 +21,5 @@ exports.categoryUpdateValidator = [
     .withMessage("Name is required"),
   check("content")
     .isLength({ min: 20 })
-    .withMessage("Content is required.")
+    .withMessage("Content is required and should be at least 20 characters.")
 ];

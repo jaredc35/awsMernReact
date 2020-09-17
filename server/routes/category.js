@@ -21,8 +21,8 @@ const {
 // routes
 router.post(
   "/category",
-  // categoryCreateValidator, // Must past validation
-  // runValidation,
+  categoryCreateValidator, // Must past validation
+  runValidation,
   requireSignin, // Signed in
   adminMiddleware, // Admin
   create

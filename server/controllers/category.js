@@ -11,46 +11,83 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION
 });
 
+// exports.create = (req, res) => {
+//   let form = new formidable.IncomingForm();
+//   form.parse(req, (err, fields, files) => {
+//     if (err) {
+//       return res.status(400).json({
+//         error: "Image could not upload"
+//       });
+//     }
+//     console.table({ err, fields, files });
+//     const { name, content } = fields;
+//     const { image } = files;
+//     const slug = slugify(name);
+//     let category = new Category({ name, content, slug });
+//
+//     if (image.size > 2 * 10 ** 6) {
+//       return res.status(400).json({
+//         error: "Image should be less than 2MB."
+//       });
+//     }
+//     // Upload image to s3
+//     const params = {
+//       Bucket: "mernawscourse",
+//       Key: `category/${uuidv4()}`,
+//       Body: fs.readFileSync(image.path),
+//       ACL: "public-read",
+//       ContentType: "image/jpg" // jpeg images
+//     };
+//
+//     s3.upload(params, (err, data) => {
+//       if (err) {
+//         console.log(err);
+//         res.status(400).json({ error: "Upload to s3 failed." });
+//       }
+//       console.log("AWS upload response data: ", data);
+//       category.image.url = data.Location; // Property from data returned
+//       category.image.key = data.Key;
+//       category.save((err, success) => {
+//         if (err) res.status(400).json({ error: "Error saving to database." });
+//         return res.json(success); // Return the saved
+//       });
+//     });
+//   });
+// };
+
 exports.create = (req, res) => {
-  let form = new formidable.IncomingForm();
-  form.parse(req, (err, fields, files) => {
+  const { name, image, content } = req.body;
+  // image data
+  const base64Data = new Buffer.from(
+    image.replace(/^data:image\/\w+;base64,/, ""), // Replaces the regex with ""
+    "base64" // convert to base64 datatype
+  );
+  const type = image.split(";")[0].split("/")[1];
+  const slug = slugify(name);
+  let category = new Category({ name, content, slug });
+
+  // Upload image to s3
+  const params = {
+    Bucket: "mernawscourse",
+    Key: `category/${uuidv4()}.${type}`,
+    Body: base64Data,
+    ACL: "public-read",
+    ContentEncoding: "base64",
+    ContentType: `image/${type}` // jpeg images
+  };
+
+  s3.upload(params, (err, data) => {
     if (err) {
-      return res.status(400).json({
-        error: "Image could not upload"
-      });
+      console.log(err);
+      res.status(400).json({ error: "Upload to s3 failed." });
     }
-    console.table({ err, fields, files });
-    const { name, content } = fields;
-    const { image } = files;
-    const slug = slugify(name);
-    let category = new Category({ name, content, slug });
-
-    if (image.size > 2 * 10 ** 6) {
-      return res.status(400).json({
-        error: "Image should be less than 2MB."
-      });
-    }
-    // Upload image to s3
-    const params = {
-      Bucket: "mernawscourse",
-      Key: `category/${uuidv4()}`,
-      Body: fs.readFileSync(image.path),
-      ACL: "public-read",
-      ContentType: "image/jpg" // jpeg images
-    };
-
-    s3.upload(params, (err, data) => {
-      if (err) {
-        console.log(err);
-        res.status(400).json({ error: "Upload to s3 failed." });
-      }
-      console.log("AWS upload response data: ", data);
-      category.image.url = data.Location; // Property from data returned
-      category.image.key = data.Key;
-      category.save((err, success) => {
-        if (err) res.status(400).json({ error: "Error saving to database." });
-        return res.json(success); // Return the saved
-      });
+    // console.log("AWS upload response data: ", data);
+    category.image.url = data.Location; // Property from data returned
+    category.image.key = data.Key;
+    category.postedBy = req.user._id; // User's ID
+    category.save((err, success) => {
+      if (err) res.status(400).json({ error: "Error saving to database." });
+      return res.json(success); // Return the saved
     });
   });
 };
@@ -78,7 +115,15 @@ exports.create = (req, res) => {
 // // };
 
 exports.list = (req, res) => {
-  //
+  Category.find({}).exec((err, data) => {
+    // Find all of the categories
+    if (err) {
+      return res.status(400).json({
+        error: "Categories could not be loaded."
+      });
+    }
+    res.json(data);
+  });
 };
 exports.read = (req, res) => {
   //
