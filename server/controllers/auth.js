@@ -68,7 +68,7 @@ exports.registerActivate = (req, res) => {
     }
 
     const { name, email, password } = jwt.decode(token);
-    console.log(name, email, password);
+    // console.log(name, email, password);
     const username = shortId.generate(); // Generate unique shortId
 
     User.findOne({ email }).exec((err, user) => {

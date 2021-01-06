@@ -10,6 +10,11 @@ const Navbar = () => {
           <a className="text-light nav-link">Home</a>
         </Link>
       </li>
+      <li className="nav-item">
+        <Link href="/user/link/create">
+          <a className="text-light nav-link btn btn-success">Submit a Link</a>
+        </Link>
+      </li>
 
       {!isAuth() && (
         <Fragment>
